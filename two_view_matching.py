@@ -20,6 +20,44 @@ def read_and_show(img_path1, img_path2, show=False):
 
     return (image1, image2)
 
+def harris_conner(img, len_window, threshold):
+
+    print("正在检测角点...\n")
+    corners = []
+    I_y, I_x = np.gradient(img)
+    I_xx = np.power(I_x, 2)
+    I_yy = np.power(I_y, 2)
+    I_xy = np.multiply(I_x, I_y)
+    bias = len_window//2
+
+    for i in range(bias, img.shape[0]-bias):
+        for j in range(bias, img.shape[1]-bias):
+            lambda_1 = I_xx[i-bias : i+bias+1, j-bias : j+bias+1].sum()
+            lambda_2 = I_yy[i-bias : i+bias+1, j-bias : j+bias+1].sum()
+            lambda_3 = I_xy[i-bias : i+bias+1, j-bias : j+bias+1].sum()
+
+            R = np.multiply(lambda_1, lambda_2) - 0.05 * np.power(lambda_1+lambda_2, 2) - np.power(lambda_3, 2)
+
+            if R > threshold:
+                corners.append([j, i])
+
+    print("角点检测完毕\n")
+    return corners
+
+def show_corners(corners, img_name, show=False):
+
+    img = cv2.imread("./pics/" + img_name + "1.jpg")
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    for point in corners:
+        cv2.circle(img, point, 5, (0, 255, 255), -1)
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_GRAY2RGB))
+    plt.savefig("./res/" + img_name + "_corners.png", dpi=300)
+    if show:
+        plt.show()
+    plt.clf()
+
+
 def feature_extraction(img1, img2):
 
     sift = cv2.SIFT_create()
@@ -177,13 +215,17 @@ if __name__ == "__main__":
     img_path1 = "./pics/" + img_name + "1.jpg"
     img_path2 = "./pics/" + img_name + "2.jpg"
     method = "FM_LMEDS" # 计算fundamental matrix的方法
+
     (image1, image2) = read_and_show(img_path1, img_path2, show=False)
 
-    print("开始进行特征提取\n")
+    corners = harris_conner(image1, len_window=3, threshold=10000000)
+    show_corners(corners, img_name, show=False)
+
+    print("开始进行特征提取...\n")
     (keypoints1, descriptors1), (keypoints2, descriptors2) = feature_extraction(image1, image2)
     print("特征提取完成\n")
     
-    print("开始进行特征匹配\n")
+    print("开始进行特征匹配...\n")
     matches = brute_force_match(descriptors1, descriptors2, threshold=0.75)
     print("特征匹配完成\n")
     
@@ -193,7 +235,7 @@ if __name__ == "__main__":
     matched_pts2 = np.int32([keypoints2[j].pt for _, j in matches])
 
     # 根据匹配结果计算fundamental matrix
-    print("开始进行fundamental matrix和epipolar lines的计算\n")
+    print("开始进行fundamental matrix和epipolar lines的计算...\n")
     F, mask = cal_fundamental_mtx(matched_pts1, matched_pts2, method)
 
     if method == "FM_LMEDS" or method == "FM_8POINT":

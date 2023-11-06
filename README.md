@@ -2,6 +2,7 @@
 
 #### 实验内容
 
+1. 实现Harris Corner角点检测算法
 1. 利用OpenCV进行SIFT特征提取
 2. 实现对特征点的暴力匹配并展示匹配结果
 3. 实现规范化八点法，利用特征匹配结果计算fundamental matrix
@@ -9,6 +10,8 @@
 
 #### 代码说明
 
+* `harris_conner`用于对图片进行角点识别，可以设置`len_size`参数控制窗口大小，设置`threshold`参数控制阈值
+* `show_corners`用于对识别到的角点进行可视化展示
 * `read_and_show`用于读取两个视角的图片并进行灰度处理，可以设置`show`参数进行两张灰度图展示
 * `feature_extraction`使用OpenCV基于SIFT对图片特征进行提取，返回关键点和对应的描述符
 * `brute_force_match`用于对得到的图片特征进行匹配，基于关键点描述符的相似度进行匹配，可以设置`threshold`来对特征进行进一步筛选
@@ -19,6 +22,14 @@
 * 所有的结果均保存在res路径中
 
 #### 结果展示
+
+##### 角点匹配结果
+
+由于后续没有用到Harris Corner匹配特征，因此仅展示一个图片上的结果（黑色点代表检测到的角）
+
+<div align=center>
+<img src=./res/building_corners.png width=70%>
+</div>
 
 ##### 特征匹配结果(只展示200对匹配)
 
